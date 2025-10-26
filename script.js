@@ -5,6 +5,7 @@ const timerDisplay = document.getElementById('timerDisplay');
 
 let countdownInterval = null;
 let curTargetDate = null;
+let curBackgroundURL = null;
 
 settingsBtn.addEventListener('click', () => {
     overlay.style.display = 'flex';
@@ -14,6 +15,7 @@ createBtn.addEventListener('click', () => {
     const targetDate = document.getElementById('targetDate').value;
     const fontSize = document.getElementById('fontSize').value;
     const fontColor = document.getElementById('fontColor').value;
+    const backgroundFile = document.getElementById('backgroundUpload').files[0];
     
     if (!targetDate) {
         alert('Please select a date and time');
@@ -23,6 +25,12 @@ createBtn.addEventListener('click', () => {
     curTargetDate = new Date(targetDate);
 
     if (countdownInterval) clearInterval(countdownInterval);
+    if (curBackgroundURL) URL.revokeObjectURL(curBackgroundURL);
+
+    if (backgroundFile) {
+        curBackgroundURL = URL.createObjectURL(backgroundFile);
+        setBackgroundMedia(backgroundFile.type, curBackgroundURL);
+    } else clearBackground();
     
     // actual timer display
     timerDisplay.innerHTML = `
@@ -70,4 +78,34 @@ function updateCountdown() {
     timerElement.querySelector('.hours').textContent = hours.toString().padStart(2, '0');
     timerElement.querySelector('.mins').textContent = mins.toString().padStart(2, '0');
     timerElement.querySelector('.secs').textContent = secs.toString().padStart(2, '0');
+}
+
+function setBackgroundMedia(fileType, objectUrl) {
+    clearBackground();
+    const backgroundContainer = document.createElement('div');
+    backgroundContainer.className = 'background-container';
+    let mediaElement;
+
+    if (fileType.startsWith('video/')) {
+        mediaElement = document.createElement('video');
+        mediaElement.autoplay = true;
+        mediaElement.loop = true;
+        mediaElement.muted = true;
+        mediaElement.playsInline = true;
+    } else if (fileType.startsWith('image/')) {
+        mediaElement = document.createElement('img');
+    }
+    
+    if (mediaElement) {
+        mediaElement.src = objectUrl;
+        mediaElement.alt = 'Countdown background';
+        mediaElement.className = 'background-media';
+        backgroundContainer.appendChild(mediaElement);
+        document.querySelector('.main-area').appendChild(backgroundContainer);
+    }
+}
+
+function clearBackground() {
+    const curBackground = document.querySelector('.background-container');
+    if (curBackground) curBackground.remove();
 }
