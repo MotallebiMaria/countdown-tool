@@ -7,22 +7,25 @@ let countdownInterval = null;
 let curTargetDate = null;
 let curBackgroundURL = null;
 let livePreviewInterval = null;
-let previewTimer = null;
 
-settingsBtn.addEventListener('click', () => {
+settingsBtn.addEventListener('click', async () => {
     overlay.style.display = 'flex';
+    await storageManager.loadSavedSettings();
+    setTimeout(() => previewManager.initializeLivePreview(), 100);
 });
 
-createBtn.addEventListener('click', () => {
+createBtn.addEventListener('click', async () => {
     previewManager.clearPreview();
-    clearInterval(livePreviewInterval);
-    livePreviewInterval = null;
-    
+    if (livePreviewInterval) {
+        clearInterval(livePreviewInterval);
+        livePreviewInterval = null;
+    }
+
     const targetDate = document.getElementById('targetDate').value;
     const backgroundFile = document.getElementById('backgroundUpload').files[0];
     const title = document.getElementById('title').value;
     const titleSize = document.querySelector('.size[data-type="title"]').value;
-    const titleColor = document.querySelector('.color[data-type="title').value;
+    const titleColor = document.querySelector('.color[data-type="title"]').value;
     const daySize = document.querySelector('.size[data-type="days"]').value;
     const dayColor = document.querySelector('.color[data-type="days"]').value;
     const hourSize = document.querySelector('.size[data-type="hours"]').value;
@@ -40,13 +43,60 @@ createBtn.addEventListener('click', () => {
     curTargetDate = new Date(targetDate);
 
     if (countdownInterval) clearInterval(countdownInterval);
-    if (curBackgroundURL) URL.revokeObjectURL(curBackgroundURL);
+    if (curBackgroundURL) {
+        URL.revokeObjectURL(curBackgroundURL);
+        curBackgroundURL = null;
+    }
 
     if (backgroundFile) {
-        curBackgroundURL = URL.createObjectURL(backgroundFile);
-        countdownManager.setBackgroundMedia(backgroundFile.type, curBackgroundURL);
-    } else countdownManager.clearBackground();
-    
+        try {
+            await storageManager.saveBackground(backgroundFile);
+            curBackgroundURL = URL.createObjectURL(backgroundFile);
+            countdownManager.setBackgroundMedia(backgroundFile.type, curBackgroundURL);
+        } catch (err) {
+            console.error('Failed saving background to IndexedDB', err);
+            // fallback: still show background from file URL
+            curBackgroundURL = URL.createObjectURL(backgroundFile);
+            countdownManager.setBackgroundMedia(backgroundFile.type, curBackgroundURL);
+        }
+    } else {
+        const saved = storageManager.loadSettings();
+        if (saved && saved.hasBackground) {
+            try {
+                const stored = await storageManager.getBackground();
+                if (stored && stored.blob) {
+                    curBackgroundURL = URL.createObjectURL(stored.blob);
+                    countdownManager.setBackgroundMedia(stored.type || stored.blob.type, curBackgroundURL);
+                } else {
+                    countdownManager.clearBackground();
+                }
+            } catch (err) {
+                console.error('Failed to load background from IndexedDB', err);
+                countdownManager.clearBackground();
+            }
+        } else {
+            countdownManager.clearBackground();
+        }
+    }
+
+    const settings = {
+        targetDate: targetDate,
+        title: title,
+        titleSize: titleSize,
+        titleColor: titleColor,
+        daySize: daySize,
+        dayColor: dayColor,
+        hourSize: hourSize,
+        hourColor: hourColor,
+        minSize: minSize,
+        minColor: minColor,
+        secSize: secSize,
+        secColor: secColor,
+        hasBackground: !!backgroundFile || !!(storageManager.loadSettings() && storageManager.loadSettings().hasBackground)
+    };
+
+    await storageManager.saveSettings(settings);
+
     // actual timer display
     timerDisplay.innerHTML = `
         <div class="timer draggable" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
@@ -71,6 +121,7 @@ createBtn.addEventListener('click', () => {
 overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
         overlay.style.display = 'none';
+        previewManager.clearPreview();
     }
 });
 
@@ -87,7 +138,8 @@ const countdownManager = {
         const distance = curTargetDate.getTime() - (new Date().getTime());
         if (distance < 0) {
             clearInterval(countdownInterval);
-            timerDisplay.querySelector('.timer').innerHTML = "Time's up!";
+            const t = timerDisplay.querySelector('.timer');
+            if (t) t.innerHTML = "Time's up!";
             return;
         }
 
@@ -97,10 +149,15 @@ const countdownManager = {
         const secs = Math.floor(distance % (1000 * 60) / 1000);
 
         const timerElement = timerDisplay.querySelector('.timer');
-        timerElement.querySelector('.days').textContent = days;
-        timerElement.querySelector('.hours').textContent = hours.toString().padStart(2, '0');
-        timerElement.querySelector('.mins').textContent = mins.toString().padStart(2, '0');
-        timerElement.querySelector('.secs').textContent = secs.toString().padStart(2, '0');
+        if (!timerElement) return;
+        const daysEl = timerElement.querySelector('.days');
+        const hoursEl = timerElement.querySelector('.hours');
+        const minsEl = timerElement.querySelector('.mins');
+        const secsEl = timerElement.querySelector('.secs');
+        if (daysEl) daysEl.textContent = days;
+        if (hoursEl) hoursEl.textContent = hours.toString().padStart(2, '0');
+        if (minsEl) minsEl.textContent = mins.toString().padStart(2, '0');
+        if (secsEl) secsEl.textContent = secs.toString().padStart(2, '0');
     },
 
     setBackgroundMedia(fileType, objectUrl) {
@@ -193,7 +250,9 @@ const countdownManager = {
 };
 
 const previewManager = {
-    initializeLivePreview() {
+    curPreviewBackgroundURL: null,
+
+    async initializeLivePreview() {
         previewManager.clearPreview();
         
         const previewContainer = document.getElementById('livePreview');
@@ -211,6 +270,51 @@ const previewManager = {
             </div>
         `;
         
+        try {
+            const stored = await storageManager.getBackground();
+            if (stored && stored.blob) {
+                // clean up any previous background URL
+                if (this.currentPreviewBackgroundURL) {
+                    URL.revokeObjectURL(this.currentPreviewBackgroundURL);
+                    this.currentPreviewBackgroundURL = null;
+                }
+
+                const bgContainer = document.createElement('div');
+                bgContainer.className = 'background-container';
+                bgContainer.style.position = 'absolute';
+                bgContainer.style.top = '0';
+                bgContainer.style.left = '0';
+                bgContainer.style.width = '100%';
+                bgContainer.style.height = '100%';
+                bgContainer.style.zIndex = '-1';
+
+                let mediaEl;
+                const type = stored.type || stored.blob.type || '';
+                if (type.startsWith('video/')) {
+                    mediaEl = document.createElement('video');
+                    mediaEl.autoplay = true;
+                    mediaEl.loop = true;
+                    mediaEl.muted = true;
+                    mediaEl.playsInline = true;
+                } else if (type.startsWith('image/')) {
+                    mediaEl = document.createElement('img');
+                }
+
+                if (mediaEl) {
+                    this.curPreviewBackgroundURL = URL.createObjectURL(stored.blob);
+                    mediaEl.src = this.curPreviewBackgroundURL;
+                    mediaEl.className = 'background-media';
+                    mediaEl.style.objectFit = 'cover';
+                    mediaEl.style.width = '100%';
+                    mediaEl.style.height = '100%';
+                    bgContainer.appendChild(mediaEl);
+                    previewContainer.appendChild(bgContainer);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to load preview background from IndexedDB', err);
+        }
+
         previewManager.updateLivePreview();
         livePreviewInterval = setInterval(previewManager.updateLivePreview, 100);
     },
@@ -265,6 +369,10 @@ const previewManager = {
     },
 
     clearPreview() {
+        if (this.currentPreviewBackgroundURL) {
+            URL.revokeObjectURL(this.currentPreviewBackgroundURL);
+            this.currentPreviewBackgroundURL = null;
+        }
         const existingPreview = document.getElementById('livePreview');
         if (existingPreview) {
             existingPreview.innerHTML = ''; 
@@ -276,14 +384,130 @@ const previewManager = {
     }    
 };
 
-settingsBtn.addEventListener('click', () => {
-    overlay.style.display = 'flex';
-    setTimeout(previewManager.initializeLivePreview, 100);
-});
+const storageManager = {
+    _dbName: 'countdownDB',
+    _storeName: 'backgrounds',
 
-overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-        overlay.style.display = 'none';
-        previewManager.clearPreview();
+    _openDB() {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(this._dbName, 1);
+            req.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(this._storeName)) {
+                    db.createObjectStore(this._storeName, { keyPath: 'id' });
+                }
+            };
+            req.onsuccess = (e) => resolve(e.target.result);
+            req.onerror = (e) => reject(e.target.error);
+        });
+    },
+
+    async saveBackground(file) {
+        if (!file) return;
+        const db = await this._openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(this._storeName, 'readwrite');
+            const store = tx.objectStore(this._storeName);
+            const entry = { id: 'bg', blob: file, type: file.type || '', timestamp: Date.now() };
+            const req = store.put(entry);
+            req.onsuccess = () => resolve();
+            req.onerror = (e) => reject(e.target.error);
+        });
+    },
+
+    async getBackground() {
+        const db = await this._openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(this._storeName, 'readonly');
+            const store = tx.objectStore(this._storeName);
+            const req = store.get('bg');
+            req.onsuccess = (e) => resolve(e.target.result || null);
+            req.onerror = (e) => reject(e.target.error);
+        });
+    },
+
+    async deleteBackground() {
+        const db = await this._openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(this._storeName, 'readwrite');
+            const store = tx.objectStore(this._storeName);
+            const req = store.delete('bg');
+            req.onsuccess = () => resolve();
+            req.onerror = (e) => reject(e.target.error);
+        });
+    },
+
+    // save settings to localStorage (keeps small metadata). async return to allow callers to await background work.
+    async saveSettings(settings) {
+        try {
+            localStorage.setItem('countdownSettings', JSON.stringify(settings));
+            console.log('Settings saved:', settings);
+        } catch (error) {
+            console.error('Failed to save settings:', error);
+        }
+    },
+
+    loadSettings() {
+        try {
+            const saved = localStorage.getItem('countdownSettings');
+            return saved ? JSON.parse(saved) : null;
+        } catch (error) {
+            console.error('Failed to load settings:', error);
+            return null;
+        }
+    },
+
+    clearSettings() {
+        try {
+            localStorage.removeItem('countdownSettings');
+        } catch (error) {
+            console.error('Failed to clear settings:', error);
+        }
+    },
+
+    // load saved settings into the form; also does not automatically attach background to main area (preview handles that)
+    async loadSavedSettings() {
+        const saved = this.loadSettings();
+        if (saved) {
+            document.getElementById('title').value = saved.title || '';
+            document.getElementById('targetDate').value = saved.targetDate || '';
+
+            document.querySelector('.size[data-type="title"]').value = saved.titleSize || '32';
+            document.querySelector('.color[data-type="title"]').value = saved.titleColor || '#ffffff';
+            document.querySelector('.size[data-type="days"]').value = saved.daySize || '40';
+            document.querySelector('.color[data-type="days"]').value = saved.dayColor || '#ff6b6b';
+            document.querySelector('.size[data-type="hours"]').value = saved.hourSize || '40';
+            document.querySelector('.color[data-type="hours"]').value = saved.hourColor || '#4ecdc4';
+            document.querySelector('.size[data-type="mins"]').value = saved.minSize || '40';
+            document.querySelector('.color[data-type="mins"]').value = saved.minColor || '#45b7d1';
+            document.querySelector('.size[data-type="secs"]').value = saved.secSize || '40';
+            document.querySelector('.color[data-type="secs"]').value = saved.secColor || '#96ceb4';
+
+            console.log('Loaded saved settings:', saved);
+            return saved;
+        }
+        return null;
+    },
+
+    // clear both localStorage and the stored background blob
+    async resetSettings() {
+        if (confirm('Clear all saved settings?')) {
+            this.clearSettings();
+            try {
+                await this.deleteBackground();
+            } catch (err) {
+                console.warn('Failed to delete background from IndexedDB', err);
+            }
+            location.reload();
+        }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const saved = await storageManager.loadSavedSettings();
+    if (saved && saved.targetDate) {
+        setTimeout(() => {
+            createBtn.click();
+        }, 500);
     }
 });

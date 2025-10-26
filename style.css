@@ -175,6 +175,9 @@ small {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    background: #2a2a2a;
+    border-radius: 8px;
+    padding: 0.5rem;
 }
 
 .styling-side {
@@ -198,17 +201,6 @@ small {
     position: relative;
     overflow: hidden;
     padding: 0.5rem;
-}
-
-.preview-container {
-    background: #2a2a2a;
-    border-radius: 8px;
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
 }
 
 .preview-container h3, .styling-side h3 {
@@ -310,7 +302,6 @@ input {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    margin-top: 1rem;
     margin-top: auto;
     flex-shrink: 0;
 }
