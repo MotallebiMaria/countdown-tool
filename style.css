@@ -54,6 +54,20 @@ body {
     text-align: center;
 }
 
+.timer {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.timer span {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.5rem;
+    border-radius: 5px;
+    min-width: 50px;
+    display: inline-block;
+    text-align: center;
+}
+
 /* --------- overlay --------- */
 .overlay {
     display: none;

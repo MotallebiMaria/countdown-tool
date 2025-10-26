@@ -3,6 +3,9 @@ const overlay = document.getElementById('overlay');
 const createBtn = document.getElementById('createBtn');
 const timerDisplay = document.getElementById('timerDisplay');
 
+let countdownInterval = null;
+let curTargetDate = null;
+
 settingsBtn.addEventListener('click', () => {
     overlay.style.display = 'flex';
 });
@@ -16,13 +19,22 @@ createBtn.addEventListener('click', () => {
         alert('Please select a date and time');
         return;
     }
+
+    curTargetDate = new Date(targetDate);
+
+    if (countdownInterval) clearInterval(countdownInterval);
     
-    // placeholder with basic styling
+    // actual timer display
     timerDisplay.innerHTML = `
         <div class="timer" style="font-size: ${fontSize}px; color: ${fontColor};">
-            Timer created for ${new Date(targetDate).toLocaleString()}
+            <span class="days">0</span>d
+            <span class="hours">0</span>h
+            <span class="mins">0</span>m
+            <span class="secs">0</span>s
         </div>
     `;
+
+    startCountdown();
     
     overlay.style.display = 'none';
 });
@@ -32,3 +44,30 @@ overlay.addEventListener('click', (e) => {
         overlay.style.display = 'none';
     }
 });
+
+function startCountdown() {
+    updateCountdown();
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+function updateCountdown() {
+    if (!curTargetDate) return;
+
+    const distance = curTargetDate.getTime() - (new Date().getTime());
+    if (distance < 0) {
+        clearInterval(countdownInterval);
+        timerDisplay.querySelector('.timer').innerHTML = "Time's up!";
+        return;
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(distance % (1000 * 60 * 60 * 24) / (1000 * 60 * 60));
+    const mins = Math.floor(distance % (1000 * 60 * 60) / (1000 * 60));
+    const secs = Math.floor(distance % (1000 * 60) / 1000);
+
+    const timerElement = timerDisplay.querySelector('.timer');
+    timerElement.querySelector('.days').textContent = days;
+    timerElement.querySelector('.hours').textContent = hours.toString().padStart(2, '0');
+    timerElement.querySelector('.mins').textContent = mins.toString().padStart(2, '0');
+    timerElement.querySelector('.secs').textContent = secs.toString().padStart(2, '0');
+}
