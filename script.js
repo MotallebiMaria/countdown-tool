@@ -43,8 +43,8 @@ createBtn.addEventListener('click', () => {
     
     // actual timer display
     timerDisplay.innerHTML = `
-        <div class="timer">
-            <p class="timer-title" style="font-size: ${titleSize}px; color: ${titleColor};">${title}</p>
+        <div class="timer draggable" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            ${title ? `<p class="timer-title" style="font-size: ${titleSize}px; color: ${titleColor};">${title}</p>` : ""}
             <div class="time-row">
                 <span class="days" style="font-size: ${daySize}px; color: ${dayColor};">0</span>d
                 <span class="hours" style="font-size: ${hourSize}px; color: ${hourColor};">0</span>h
@@ -53,6 +53,9 @@ createBtn.addEventListener('click', () => {
             </div>
         </div>
     `;
+
+    const timerElement = timerDisplay.querySelector('.timer');
+    makeDraggable(timerElement);
 
     startCountdown();
     
@@ -120,4 +123,61 @@ function setBackgroundMedia(fileType, objectUrl) {
 function clearBackground() {
     const curBackground = document.querySelector('.background-container');
     if (curBackground) curBackground.remove();
+}
+
+function makeDraggable(element) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+    element.onmousedown = dragMouseDown;
+
+    function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+
+        const rect = element.getBoundingClientRect();
+        const parentRect = element.offsetParent ? element.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
+        element.style.left = (rect.left - parentRect.left) + 'px';
+        element.style.top = (rect.top - parentRect.top) + 'px';
+        element.style.transform = 'none';
+
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        const elemRect = element.getBoundingClientRect();
+        const parentRect = element.offsetParent ? element.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
+
+        let newLeftViewport = elemRect.left - pos1;
+        let newTopViewport = elemRect.top - pos2;
+
+        // boundaries so timer can't be dragged out of view
+        const maxLeft = window.innerWidth - elemRect.width;
+        const maxTop = window.innerHeight - elemRect.height;
+        const topBar = document.querySelector('.top-bar');
+        const minTopViewport = topBar ? topBar.getBoundingClientRect().bottom : 0;
+
+        newLeftViewport = Math.max(0, Math.min(newLeftViewport, maxLeft));
+        newTopViewport = Math.max(minTopViewport, Math.min(newTopViewport, maxTop));
+
+        const newLeftRelative = newLeftViewport - parentRect.left;
+        const newTopRelative = newTopViewport - parentRect.top;
+        element.style.left = newLeftRelative + 'px';
+        element.style.top = newTopRelative + 'px';
+    }
+
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
 }
