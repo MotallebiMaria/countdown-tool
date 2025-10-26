@@ -7,11 +7,23 @@ let countdownInterval = null;
 let curTargetDate = null;
 let curBackgroundURL = null;
 let livePreviewInterval = null;
+let curAnimations = [];
 
 settingsBtn.addEventListener('click', async () => {
     overlay.style.display = 'flex';
     await storageManager.loadSavedSettings();
     setTimeout(() => previewManager.initializeLivePreview(), 100);
+});
+
+document.getElementById('backgroundUpload').addEventListener('change', async (e) => {
+    const backgroundFile = e.target.files[0];
+    if (backgroundFile) {
+        if (curBackgroundURL) {
+            URL.revokeObjectURL(curBackgroundURL);
+        }
+        curBackgroundURL = URL.createObjectURL(backgroundFile);
+        previewManager.updateBackgroundPreview(backgroundFile.type, curBackgroundURL);
+    }
 });
 
 createBtn.addEventListener('click', async () => {
@@ -34,6 +46,8 @@ createBtn.addEventListener('click', async () => {
     const minColor = document.querySelector('.color[data-type="mins"]').value;
     const secSize = document.querySelector('.size[data-type="secs"]').value;
     const secColor = document.querySelector('.color[data-type="secs"]').value;
+    const animationSpeed = document.getElementById('animationSpeed').value;
+    const selectedAnimation = document.querySelector('input[name="animation"]:checked')?.dataset.animation || '';
     
     if (!targetDate) {
         alert('Please select a date and time');
@@ -41,6 +55,7 @@ createBtn.addEventListener('click', async () => {
     }
 
     curTargetDate = new Date(targetDate);
+    curAnimations = selectedAnimation ? [selectedAnimation] : [];
 
     if (countdownInterval) clearInterval(countdownInterval);
     if (curBackgroundURL) {
@@ -92,14 +107,19 @@ createBtn.addEventListener('click', async () => {
         minColor: minColor,
         secSize: secSize,
         secColor: secColor,
-        hasBackground: !!backgroundFile || !!(storageManager.loadSettings() && storageManager.loadSettings().hasBackground)
+        hasBackground: !!backgroundFile || !!(storageManager.loadSettings() && storageManager.loadSettings().hasBackground),
+        animation: selectedAnimation,
+        animationSpeed: animationSpeed
     };
 
     await storageManager.saveSettings(settings);
 
+    const animationClasses = selectedAnimation || '';
+    const animationStyle = selectedAnimation ? `animation-duration: ${2 - animationSpeed}s;` : '';
+
     // actual timer display
     timerDisplay.innerHTML = `
-        <div class="timer draggable" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="timer draggable ${animationClasses}" style="position: relative; ${animationStyle}">
             ${title ? `<p class="timer-title" style="font-size: ${titleSize}px; color: ${titleColor};">${title}</p>` : ""}
             <div class="time-row">
                 <span class="days" style="font-size: ${daySize}px; color: ${dayColor};">0</span>d
@@ -252,6 +272,51 @@ const countdownManager = {
 const previewManager = {
     curPreviewBackgroundURL: null,
 
+    updateBackgroundPreview(fileType, objectUrl) {
+        const previewContainer = document.getElementById('livePreview');
+        if (!previewContainer) return;
+
+        const existingBg = previewContainer.querySelector('.background-container');
+        if (existingBg) {
+            existingBg.remove();
+        }
+
+        if (this.curPreviewBackgroundURL) {
+            URL.revokeObjectURL(this.curPreviewBackgroundURL);
+        }
+
+        const bgContainer = document.createElement('div');
+        bgContainer.className = 'background-container';
+        bgContainer.style.position = 'absolute';
+        bgContainer.style.top = '0';
+        bgContainer.style.left = '0';
+        bgContainer.style.width = '100%';
+        bgContainer.style.height = '100%';
+        bgContainer.style.zIndex = '-1';
+
+        let mediaEl;
+        if (fileType.startsWith('video/')) {
+            mediaEl = document.createElement('video');
+            mediaEl.autoplay = true;
+            mediaEl.loop = true;
+            mediaEl.muted = true;
+            mediaEl.playsInline = true;
+        } else if (fileType.startsWith('image/')) {
+            mediaEl = document.createElement('img');
+        }
+
+        if (mediaEl) {
+            this.curPreviewBackgroundURL = objectUrl;
+            mediaEl.src = objectUrl;
+            mediaEl.className = 'background-media';
+            mediaEl.style.objectFit = 'cover';
+            mediaEl.style.width = '100%';
+            mediaEl.style.height = '100%';
+            bgContainer.appendChild(mediaEl);
+            previewContainer.appendChild(bgContainer);
+        }
+    },
+
     async initializeLivePreview() {
         previewManager.clearPreview();
         
@@ -335,6 +400,24 @@ const previewManager = {
         const secSize = document.querySelector('.size[data-type="secs"]').value;
         const secColor = document.querySelector('.color[data-type="secs"]').value;
         
+        const animationSpeed = document.getElementById('animationSpeed').value;
+        const selectedAnimation = document.querySelector('input[name="animation"]:checked')?.dataset.animation || '';
+        
+        const previewTimer = preview.querySelector('.preview-timer');
+        if (previewTimer) {
+            previewTimer.classList.remove('fadeIn', 'bounce', 'pulse');
+            
+            if (selectedAnimation) {
+                previewTimer.classList.add(selectedAnimation);
+            }
+            
+            if (selectedAnimation) {
+                previewTimer.style.animationDuration = `${2 - animationSpeed}s`;
+            } else {
+                previewTimer.style.animationDuration = '';
+            }
+        }
+
         const titleEl = preview.querySelector('.preview-title');
         const daysEl = preview.querySelector('.preview-days');
         const hoursEl = preview.querySelector('.preview-hours');
@@ -343,27 +426,32 @@ const previewManager = {
         
         if (titleEl) {
             titleEl.textContent = title;
-            titleEl.style.fontSize = titleSize + 'px';
+            const relativeTitleSize = Math.min(titleSize / 50, 3);
+            titleEl.style.fontSize = relativeTitleSize + 'em';
             titleEl.style.color = titleColor;
         }
         
         if (daysEl) {
-            daysEl.style.fontSize = daySize + 'px';
+            const relativeDaySize = Math.min(daySize / 50, 3);
+            daysEl.style.fontSize = relativeDaySize + 'em';
             daysEl.style.color = dayColor;
         }
         
         if (hoursEl) {
-            hoursEl.style.fontSize = hourSize + 'px';
+            const relativeHourSize = Math.min(hourSize / 50, 3);
+            hoursEl.style.fontSize = relativeHourSize + 'em';
             hoursEl.style.color = hourColor;
         }
         
         if (minsEl) {
-            minsEl.style.fontSize = minSize + 'px';
+            const relativeMinSize = Math.min(minSize / 50, 3);
+            minsEl.style.fontSize = relativeMinSize + 'em';
             minsEl.style.color = minColor;
         }
         
         if (secsEl) {
-            secsEl.style.fontSize = secSize + 'px';
+            const relativeSecSize = Math.min(secSize / 50, 3);
+            secsEl.style.fontSize = relativeSecSize + 'em';
             secsEl.style.color = secColor;
         }
     },
@@ -482,6 +570,21 @@ const storageManager = {
             document.querySelector('.color[data-type="mins"]').value = saved.minColor || '#45b7d1';
             document.querySelector('.size[data-type="secs"]').value = saved.secSize || '40';
             document.querySelector('.color[data-type="secs"]').value = saved.secColor || '#96ceb4';
+
+            document.querySelectorAll('input[name="animation"]').forEach(radio => {
+                radio.checked = radio.value === 'none';
+            });
+            
+            if (saved.animation) {
+                const radio = document.querySelector(`input[data-animation="${saved.animation}"]`);
+                if (radio) {
+                    radio.checked = true;
+                }
+            }
+
+            if (saved.animationSpeed) {
+                document.getElementById('animationSpeed').value = saved.animationSpeed;
+            }
 
             console.log('Loaded saved settings:', saved);
             return saved;

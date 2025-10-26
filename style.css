@@ -58,7 +58,7 @@ body {
     z-index: 1;
 }
 
-.timer {
+.timer, .preview-timer {
     display: flex;
     gap: 1rem;
     flex-direction: column;
@@ -67,20 +67,22 @@ body {
     box-sizing: border-box;
 }
 
-.time-row {
+.time-row, .preview-time-row {
     display: flex;
     gap: 0.5rem;
     align-items: center;
+    justify-content: center;
 }
 
-.timer-title {
-    display: block;
+.timer-title, .preview-title {
     font-weight: 600;
-    margin-bottom: 0.25rem;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
     text-align: center;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    max-width: 100%;
+    word-break: break-word;
 }
 
 .timer span {
@@ -189,20 +191,6 @@ small {
     max-height: 100%;
 }
 
-#livePreview {
-    flex: 1;
-    min-height: 0;
-    width: 100%;
-    background: #1a1a1a;
-    border-radius: 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-    padding: 0.5rem;
-}
-
 .preview-container h3, .styling-side h3 {
     color: #007acc;
     margin-bottom: 1rem;
@@ -307,39 +295,169 @@ input {
 }
 
 /* --------- live preview --------- */
-.preview-timer {
+#livePreview {
+    transform: scale(1.0);
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    background: #1a1a1a;
+    border-radius: 8px;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    transform: scale(0.78);
-    transform-origin: center center;
-    pointer-events: none;
-}
-
-.preview-time-row {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
     justify-content: center;
-}
-
-.preview-title {
-    font-weight: 600;
-    text-align: center;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    margin-bottom: 0.5rem;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding: 0.5rem;
 }
 
 .preview-days, .preview-hours, .preview-mins, .preview-secs {
     background: rgba(0, 0, 0, 0.5);
     padding: 0.5rem;
     border-radius: 6px;
-    min-width: 45px;
+    min-width: 30px;
     text-align: center;
     font-weight: bold;
+}
+
+/* animation controls */
+.animation-controls {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #444;
+}
+
+.animation-controls h4 {
+    color: #ddd;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+}
+
+.animation-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.animation-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.animation-option:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.animation-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    accent-color: #007acc;
+    cursor: pointer;
+}
+
+.animation-option .checkmark {
+    display: none;
+}
+
+.animation-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.45rem 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.12s ease-in-out;
+}
+
+.animation-option:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.animation-intensity {
+    margin-top: 1rem;
+}
+
+.animation-intensity label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.animation-intensity input[type="range"] {
+    width: 100%;
+}
+
+/* animation effects */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 53%, 80%, 100% {
+        transform: translate3d(0, 0, 0);
+    }
+    40%, 43% {
+        transform: translate3d(0, -8px, 0);
+    }
+    70% {
+        transform: translate3d(0, -4px, 0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* applying animations to timer elements */
+.timer.fadeIn {
+    animation: fadeIn 1s ease-out;
+}
+
+.timer.bounce {
+    animation: bounce 2s infinite;
+}
+
+.timer.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* preview animations */
+.preview-timer.fadeIn {
+    animation: fadeIn 1s ease-out;
+}
+
+.preview-timer.bounce {
+    animation: bounce 2s infinite;
+}
+
+.preview-timer.pulse {
+    animation: pulse 2s infinite;
 }
 
 /* responsive layout (still needs work) */

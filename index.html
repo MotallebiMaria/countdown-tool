@@ -46,9 +46,9 @@
                     <div id="livePreview"></div>
                 </div>
 
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <button class="reset-btn" onclick="storageManager.resetSettings()">Reset Saved Settings</button>
-                </div>
+                </div> -->
 
                 <button class="create-btn" id="createBtn">Create Timer</button>
             </div>
@@ -86,6 +86,41 @@
                             <label>Size: <input type="range" class="size" data-type="secs" min="20" max="100" value="40"></label>
                             <label>Color: <input type="color" class="color" data-type="secs" value="#96ceb4"></label>
                         </div>
+                    </div>
+                </div>
+                <div class="animation-controls">
+                    <h4>Animation Effects</h4>
+                    
+                    <div class="animation-options">
+                        <label class="animation-option">
+                            <input type="radio" name="animation" value="fade-in" data-animation="fadeIn">
+                            <span class="checkmark"></span>
+                            Fade In
+                        </label>
+                        
+                        <label class="animation-option">
+                            <input type="radio" name="animation" value="bouncing" data-animation="bounce">
+                            <span class="checkmark"></span>
+                            Bouncing
+                        </label>
+                        
+                        <label class="animation-option">
+                            <input type="radio" name="animation" value="pulsating" data-animation="pulse">
+                            <span class="checkmark"></span>
+                            Pulsating
+                        </label>
+                        
+                        <label class="animation-option">
+                            <input type="radio" name="animation" value="none" data-animation="" checked>
+                            <span class="checkmark"></span>
+                            None
+                        </label>
+                    </div>
+                    
+                    <div class="animation-intensity">
+                        <label>Animation Speed:
+                            <input type="range" id="animationSpeed" min="0.3" max="2" step="0.1" value="1">
+                        </label>
                     </div>
                 </div>
             </div>
