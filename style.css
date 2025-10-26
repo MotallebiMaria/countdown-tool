@@ -112,7 +112,7 @@ small {
     color: #999;
     font-size: 0.8rem;
     display: block;
-    margin-top: 0.25rem;
+    margin-top: 0.1rem;
 }
 
 /* --------- draggable timer --------- */
@@ -149,14 +149,85 @@ small {
     background: #333;
     padding: 2rem;
     border-radius: 8px;
-    width: 90%;
-    max-width: 400px;
-    max-height: 90vh;
+    width: 95%;
+    max-width: 1400px;
+    height: 85vh;
+    display: flex;
+    gap: 2rem;
+}
+
+.left-side {
+    width: 65%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+.basic-settings {
+    flex-shrink: 0;
+}
+
+.preview-container {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.styling-side {
+    width: 35%;
+    background: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.5rem;
     overflow-y: auto;
+    max-height: 100%;
+}
+
+#livePreview {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    background: #1a1a1a;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding: 0.5rem;
+}
+
+.preview-container {
+    background: #2a2a2a;
+    border-radius: 8px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.preview-container h3, .styling-side h3 {
+    color: #007acc;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
 }
 
 .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.basic-settings {
     margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #444;
 }
 
 label {
@@ -183,10 +254,11 @@ input {
     padding-bottom: 0.5rem;
 }
 
-.controls {
+.time-units-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(1, 1fr);
     gap: 1rem;
+    margin-top: 1rem;
 }
 
 .style-group {
@@ -194,6 +266,7 @@ input {
     padding: 1rem;
     border-radius: 6px;
     border: 1px solid #444;
+    margin-bottom: 0.5rem;
 }
 
 .style-group h4 {
@@ -202,6 +275,9 @@ input {
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    text-align: center;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #444;
 }
 
 .style-group label {
@@ -210,6 +286,7 @@ input {
     align-items: center;
     margin-bottom: 0.5rem;
     font-size: 0.85rem;
+    padding: 0.25rem 0;
 }
 
 .style-group input[type="range"] {
@@ -234,4 +311,77 @@ input {
     border-radius: 4px;
     cursor: pointer;
     margin-top: 1rem;
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+/* --------- live preview --------- */
+.preview-timer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transform: scale(0.78);
+    transform-origin: center center;
+    pointer-events: none;
+}
+
+.preview-time-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-title {
+    font-weight: 600;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.preview-days, .preview-hours, .preview-mins, .preview-secs {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.5rem;
+    border-radius: 6px;
+    min-width: 45px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* responsive layout (still needs work) */
+@media (max-width: 1024px) {
+    .overlay-content {
+        flex-direction: column;
+        height: auto;
+        max-height: 90vh;
+    }
+    
+    .left-side, .styling-side {
+        width: 100%;
+    }
+    
+    .preview-container {
+        min-height: 300px;
+    }
+    
+    .styling-side {
+        max-height: 400px;
+    }
+    
+    .time-units-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .time-units-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .overlay-content {
+        padding: 1rem;
+    }
 }

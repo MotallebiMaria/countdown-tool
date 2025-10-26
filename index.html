@@ -21,61 +21,70 @@
 
     <div class="overlay" id="overlay">
         <div class="overlay-content">
-            <h2>Create Countdown</h2>
+            <div class="left-side">
+                <h2>Create Countdown</h2>
+                <div class="basic-settings">
+                    <div class="form-group">
+                        <label for="title">Title (optional):</label>
+                        <input type="text" id="title">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetDate">Target Date & Time:</label>
+                        <input type="datetime-local" id="targetDate">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="backgroundUpload">Background (Image/Video):</label>
+                        <input type="file" id="backgroundUpload" accept=".mp4,.jpg,.jpeg,.png">
+                        <small>Supports: MP4, JPG, PNG</small>
+                    </div>
+                </div>
+
+                <div class="preview-container">
+                    <h3>Live Preview</h3>
+                    <div id="livePreview"></div>
+                </div>
+
+                <button class="create-btn" id="createBtn">Create Timer</button>
+            </div>
             
-            <div class="form-group">
-                <label for="title">Title (optional):</label>
-                <input type="text" id="title">
+            <div class="styling-side">
+                <h3>Styling Controls</h3>
                 <div class="styling-controls">
-                    <div class="controls">
+                    <div class="style-group">
+                        <h4>Title</h4>
                         <label>Size: <input type="range" class="size" data-type="title" min="16" max="72" value="32"></label>
                         <label>Color: <input type="color" class="color" data-type="title" value="#ffffff"></label>
                     </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="targetDate">Target Date & Time:</label>
-                <input type="datetime-local" id="targetDate">
-            </div>
-
-            <div class="form-group">
-                <label for="backgroundUpload">Background (Image/Video):</label>
-                <input type="file" id="backgroundUpload" accept=".mp4,.jpg,.jpeg,.png">
-                <small>Supports: MP4, JPG, PNG</small>
-            </div>
-
-            <div class="styling-controls">
-                <h3>Time Unit Styling</h3>
-                
-                <div class="controls">
-                    <div class="style-group">
-                        <h4>Days</h4>
-                        <label>Size: <input type="range" class="size" data-type="days" min="20" max="100" value="40"></label>
-                        <label>Color: <input type="color" class="color" data-type="days" value="#ff6b6b"></label>
-                    </div>
                     
-                    <div class="style-group">
-                        <h4>Hours</h4>
-                        <label>Size: <input type="range" class="size" data-type="hours" min="20" max="100" value="40"></label>
-                        <label>Color: <input type="color" class="color" data-type="hours" value="#4ecdc4"></label>
-                    </div>
-                    
-                    <div class="style-group">
-                        <h4>Minutes</h4>
-                        <label>Size: <input type="range" class="size" data-type="mins" min="20" max="100" value="40"></label>
-                        <label>Color: <input type="color" class="color" data-type="mins" value="#45b7d1"></label>
-                    </div>
-                    
-                    <div class="style-group">
-                        <h4>Seconds</h4>
-                        <label>Size: <input type="range" class="size" data-type="secs" min="20" max="100" value="40"></label>
-                        <label>Color: <input type="color" class="color" data-type="secs" value="#96ceb4"></label>
+                    <div class="time-units-grid">
+                        <div class="style-group">
+                            <h4>Days</h4>
+                            <label>Size: <input type="range" class="size" data-type="days" min="20" max="100" value="40"></label>
+                            <label>Color: <input type="color" class="color" data-type="days" value="#ff6b6b"></label>
+                        </div>
+                        
+                        <div class="style-group">
+                            <h4>Hours</h4>
+                            <label>Size: <input type="range" class="size" data-type="hours" min="20" max="100" value="40"></label>
+                            <label>Color: <input type="color" class="color" data-type="hours" value="#4ecdc4"></label>
+                        </div>
+                        
+                        <div class="style-group">
+                            <h4>Minutes</h4>
+                            <label>Size: <input type="range" class="size" data-type="mins" min="20" max="100" value="40"></label>
+                            <label>Color: <input type="color" class="color" data-type="mins" value="#45b7d1"></label>
+                        </div>
+                        
+                        <div class="style-group">
+                            <h4>Seconds</h4>
+                            <label>Size: <input type="range" class="size" data-type="secs" min="20" max="100" value="40"></label>
+                            <label>Color: <input type="color" class="color" data-type="secs" value="#96ceb4"></label>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <button class="create-btn" id="createBtn">Create Timer</button>
         </div>
     </div>
 
