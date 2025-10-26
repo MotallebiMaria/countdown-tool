@@ -13,9 +13,18 @@ settingsBtn.addEventListener('click', () => {
 
 createBtn.addEventListener('click', () => {
     const targetDate = document.getElementById('targetDate').value;
-    const fontSize = document.getElementById('fontSize').value;
-    const fontColor = document.getElementById('fontColor').value;
     const backgroundFile = document.getElementById('backgroundUpload').files[0];
+    const title = document.getElementById('title').value;
+    const titleSize = document.querySelector('.size[data-type="title"]').value;
+    const titleColor = document.querySelector('.color[data-type="title').value;
+    const daySize = document.querySelector('.size[data-type="days"]').value;
+    const dayColor = document.querySelector('.color[data-type="days"]').value;
+    const hourSize = document.querySelector('.size[data-type="hours"]').value;
+    const hourColor = document.querySelector('.color[data-type="hours"]').value;
+    const minSize = document.querySelector('.size[data-type="mins"]').value;
+    const minColor = document.querySelector('.color[data-type="mins"]').value;
+    const secSize = document.querySelector('.size[data-type="secs"]').value;
+    const secColor = document.querySelector('.color[data-type="secs"]').value;
     
     if (!targetDate) {
         alert('Please select a date and time');
@@ -34,11 +43,14 @@ createBtn.addEventListener('click', () => {
     
     // actual timer display
     timerDisplay.innerHTML = `
-        <div class="timer" style="font-size: ${fontSize}px; color: ${fontColor};">
-            <span class="days">0</span>d
-            <span class="hours">0</span>h
-            <span class="mins">0</span>m
-            <span class="secs">0</span>s
+        <div class="timer">
+            <p class="timer-title" style="font-size: ${titleSize}px; color: ${titleColor};">${title}</p>
+            <div class="time-row">
+                <span class="days" style="font-size: ${daySize}px; color: ${dayColor};">0</span>d
+                <span class="hours" style="font-size: ${hourSize}px; color: ${hourColor};">0</span>h
+                <span class="mins" style="font-size: ${minSize}px; color: ${minColor};">0</span>m
+                <span class="secs" style="font-size: ${secSize}px; color: ${secColor};">0</span>s
+            </div>
         </div>
     `;
 

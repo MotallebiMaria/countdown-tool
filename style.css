@@ -60,7 +60,21 @@ body {
 
 .timer {
     display: flex;
+    gap: 1rem;
+    flex-direction: column;
+    align-items: center;
+}
+
+.time-row {
+    display: flex;
     gap: 0.5rem;
+    align-items: center;
+}
+
+.timer-title {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
 }
 
 .timer span {
@@ -115,6 +129,8 @@ small {
     border-radius: 8px;
     width: 90%;
     max-width: 400px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .form-group {
@@ -133,6 +149,58 @@ input {
     border-radius: 4px;
     background: #2a2a2a;
     color: white;
+}
+
+.styling-controls {
+    margin: 1.5rem 0;
+}
+
+.styling-controls h3 {
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #555;
+    padding-bottom: 0.5rem;
+}
+
+.controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.style-group {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #444;
+}
+
+.style-group h4 {
+    margin-bottom: 0.75rem;
+    color: #ddd;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.style-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.style-group input[type="range"] {
+    width: 60%;
+}
+
+.style-group input[type="color"] {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
 .create-btn {
