@@ -212,6 +212,8 @@ const countdownManager = {
 
     makeDraggable(element) {
         let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        let originalTransform = '';
+        let removedAnimationClass = '';
 
         element.onmousedown = dragMouseDown;
 
@@ -219,11 +221,26 @@ const countdownManager = {
             e = e || window.event;
             e.preventDefault();
 
+            // remove animations during drag & remember which one was removed
+            originalTransform = element.style.transform || '';
+            const animationClasses = ['fadeIn', 'bounce', 'pulse'];
+            for (const cls of animationClasses) {
+                if (element.classList.contains(cls)) {
+                    element.classList.remove(cls);
+                    removedAnimationClass = cls;
+                }
+            }
+            element.style.transform = 'none';
+            element.style.animationDuration = '';
+
             const rect = element.getBoundingClientRect();
             const parentRect = element.offsetParent ? element.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
-            element.style.left = (rect.left - parentRect.left) + 'px';
-            element.style.top = (rect.top - parentRect.top) + 'px';
-            element.style.transform = 'none';
+
+            const currentLeft = parseFloat(element.style.left) || (rect.left - parentRect.left);
+            const currentTop = parseFloat(element.style.top) || (rect.top - parentRect.top);
+
+            element.style.left = currentLeft + 'px';
+            element.style.top = currentTop + 'px';
 
             pos3 = e.clientX;
             pos4 = e.clientY;
@@ -263,6 +280,31 @@ const countdownManager = {
         }
 
         function closeDragElement() {
+            // restore animation & transform after dragging
+            if (removedAnimationClass) {
+                element.classList.add(removedAnimationClass);
+            } else {
+                // if no animation was removed, check for selected animation
+                const selectedAnimation = document.querySelector('input[name="animation"]:checked')?.dataset.animation || '';
+                if (selectedAnimation) {
+                    element.classList.add(selectedAnimation);
+                }
+            }
+
+            if (originalTransform && !originalTransform.includes('scale')) {
+                element.style.transform = originalTransform;
+            } else {
+                element.style.transform = '';
+            }
+
+            const animationSpeed = document.getElementById('animationSpeed').value;
+            const activeAnimation = element.classList.contains('fadeIn') || element.classList.contains('bounce') || element.classList.contains('pulse');
+            if (activeAnimation) {
+                element.style.animationDuration = `${2 - animationSpeed}s`;
+            } else {
+                element.style.animationDuration = '';
+            }
+
             document.onmouseup = null;
             document.onmousemove = null;
         }
