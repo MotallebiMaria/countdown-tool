@@ -26,6 +26,9 @@ document.getElementById('backgroundUpload').addEventListener('change', async (e)
         }
         curBackgroundURL = URL.createObjectURL(backgroundFile);
         previewManager.updateBackgroundPreview(backgroundFile.type, curBackgroundURL);
+        uploadManager.updateBackgroundPreview(backgroundFile);
+    } else {
+        uploadManager.clearBackgroundPreview();
     }
 });
 
@@ -33,7 +36,48 @@ document.getElementById('fontUpload').addEventListener('change', async (e) => {
     const fontFile = e.target.files[0];
     if (fontFile) {
         await fontManager.handleFontUpload(fontFile);
+    } else {
+        uploadManager.clearFontPreview();
     }
+});
+
+document.getElementById('backgroundUploadArea').addEventListener('click', () => {
+    document.getElementById('backgroundUpload').click();
+});
+
+document.getElementById('fontUploadArea').addEventListener('click', () => {
+    document.getElementById('fontUpload').click();
+});
+
+// drag and drop upload
+['backgroundUploadArea', 'fontUploadArea'].forEach(id => {
+    const area = document.getElementById(id);
+    
+    area.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        area.classList.add('dragover');
+    });
+    
+    area.addEventListener('dragleave', () => {
+        area.classList.remove('dragover');
+    });
+    
+    area.addEventListener('drop', (e) => {
+        e.preventDefault();
+        area.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            if (id === 'backgroundUploadArea') {
+                document.getElementById('backgroundUpload').files = files;
+                const event = new Event('change');
+                document.getElementById('backgroundUpload').dispatchEvent(event);
+            } else {
+                document.getElementById('fontUpload').files = files;
+                const event = new Event('change');
+                document.getElementById('fontUpload').dispatchEvent(event);
+            }
+        }
+    });
 });
 
 createBtn.addEventListener('click', async () => {
@@ -765,13 +809,14 @@ const fontManager = {
         const fontPreview = document.getElementById('fontPreview');
         if (fontPreview && curFontName) {
             fontPreview.innerHTML = `
-                <div>
-                    <div class="font-name">${curFontName}</div>
-                    <p class="font-sample" style="font-family: ${curFontFamily}">Sample Text</p>
-                    <button class="remove-font" onclick="fontManager.removeFont()">Remove Font</button>
-                </div>
+                <div class="preview-name">${curFontName} <span class="file-type">Font</span></div>
+                <p class="preview-sample" style="font-family: ${curFontFamily}">Sample Text Preview</p>
+                <button class="remove-btn" onclick="fontManager.removeFont()">Remove Font</button>
             `;
             fontPreview.classList.add('active');
+        } else {
+            fontPreview.innerHTML = '<p>No font selected</p>';
+            fontPreview.classList.remove('active');
         }
     },
 
@@ -783,14 +828,8 @@ const fontManager = {
         curFontName = null;
         curFontFamily = null;
 
-        const fontPreview = document.getElementById('fontPreview');
-        if (fontPreview) {
-            fontPreview.innerHTML = '<p>No font selected</p>';
-            fontPreview.classList.remove('active');
-        }
-
+        this.updateFontPreview();
         document.getElementById('fontUpload').value = '';
-
         previewManager.updateLivePreview();
         
         await storageManager.deleteFont();
@@ -812,9 +851,82 @@ const fontManager = {
     }
 };
 
+const uploadManager = {
+    updateBackgroundPreview(file) {
+        const preview = document.getElementById('backgroundPreview');
+        if (!preview) return;
+
+        const fileType = file.type.startsWith('image/') ? 'Image' : file.type.startsWith('video/') ? 'Video' : 'File';
+        
+        let previewContent = '';
+        
+        if (file.type.startsWith('image/')) {
+            const url = URL.createObjectURL(file);
+            previewContent = `
+                <img src="${url}" class="background-preview-image" alt="Preview">
+                <div class="preview-name">${file.name} <span class="file-type">${fileType}</span></div>
+            `;
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+        } else {
+            previewContent = `
+                <div class="preview-name">${file.name} <span class="file-type">${fileType}</span></div>
+                <p>${file.type.startsWith('video/') ? 'Video background ready' : 'Background file selected'}</p>
+            `;
+        }
+        
+        preview.innerHTML = `
+            ${previewContent}
+            <button class="remove-btn" onclick="uploadManager.removeBackground()">Remove</button>
+        `;
+        preview.classList.add('active');
+    },
+
+    clearBackgroundPreview() {
+        const preview = document.getElementById('backgroundPreview');
+        if (preview) {
+            preview.innerHTML = '<p>No background selected</p>';
+            preview.classList.remove('active');
+        }
+        document.getElementById('backgroundUpload').value = '';
+    },
+
+    removeBackground() {
+        if (curBackgroundURL) {
+            URL.revokeObjectURL(curBackgroundURL);
+            curBackgroundURL = null;
+        }
+        this.clearBackgroundPreview();
+        previewManager.updateBackgroundPreview('', '');
+    },
+
+    clearFontPreview() {
+        const preview = document.getElementById('fontPreview');
+        if (preview) {
+            preview.innerHTML = '<p>No font selected</p>';
+            preview.classList.remove('active');
+        }
+        document.getElementById('fontUpload').value = '';
+    }
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     const saved = await storageManager.loadSavedSettings();
     await fontManager.loadSavedFont();
+
+    if (saved && saved.hasBackground) {
+        try {
+            const stored = await storageManager.getBackground();
+            if (stored && stored.blob) {
+                const backgroundFile = new File([stored.blob], 'saved-background', {
+                    type: stored.type
+                });
+                uploadManager.updateBackgroundPreview(backgroundFile);
+            }
+        } catch (err) {
+            console.error('Failed to load background preview:', err);
+        }
+    }
+    
     if (saved && saved.targetDate) {
         setTimeout(() => {
             createBtn.click();

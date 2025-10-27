@@ -33,21 +33,6 @@
                         <label for="targetDate">Target Date & Time:</label>
                         <input type="datetime-local" id="targetDate">
                     </div>
-
-                    <div class="form-group">
-                        <label for="backgroundUpload">Background (Image/Video):</label>
-                        <input type="file" id="backgroundUpload" accept=".mp4,.jpg,.jpeg,.png">
-                        <small>Supports: MP4, JPG, PNG</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="fontUpload">Custom Font (Optional):</label>
-                        <input type="file" id="fontUpload" accept=".ttf,.otf">
-                        <small>Supports: TTF, OTF</small>
-                        <div class="font-preview" id="fontPreview">
-                            <p>No font selected</p>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="preview-container">
@@ -55,15 +40,45 @@
                     <div id="livePreview"></div>
                 </div>
 
-                <div class="form-group">
-                    <button class="reset-btn" onclick="storageManager.resetSettings()">Reset Saved Settings</button>
-                </div>
-
-                <button class="create-btn" id="createBtn">Create Timer</button>
+                <button class="btn" id="resetBtn" onclick="storageManager.resetSettings()">Reset Saved Settings</button>
+                <button class="btn" id="createBtn">Create Timer</button>
             </div>
             
             <div class="styling-side">
                 <h3>Styling Controls</h3>
+
+                <div class="upload-section">
+                    <div class="form-group">
+                        <label>Background (Optional):</label>
+                        <div class="upload-area" id="backgroundUploadArea">
+                            <div class="upload-content">
+                                <div class="upload-icon">📁</div>
+                                <p class="upload-text">Upload Background</p>
+                                <small>Supports: MP4, JPG, PNG</small>
+                            </div>
+                            <input type="file" id="backgroundUpload" accept=".mp4,.jpg,.jpeg,.png" class="hidden-input">
+                        </div>
+                        <div class="upload-preview" id="backgroundPreview">
+                            <p>No background selected</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Custom Font (Optional):</label>
+                        <div class="upload-area" id="fontUploadArea">
+                            <div class="upload-content">
+                                <div class="upload-icon">🔤</div>
+                                <p class="upload-text">Upload Font</p>
+                                <small>Supports: TTF, OTF</small>
+                            </div>
+                            <input type="file" id="fontUpload" accept=".ttf,.otf" class="hidden-input">
+                        </div>
+                        <div class="upload-preview" id="fontPreview">
+                            <p>No font selected</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="styling-controls">
                     <div class="style-group">
                         <h4>Title</h4>

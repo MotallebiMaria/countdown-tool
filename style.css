@@ -282,7 +282,7 @@ input {
     cursor: pointer;
 }
 
-.create-btn {
+.btn {
     width: 100%;
     padding: 0.75rem;
     background: #007acc;
@@ -292,6 +292,141 @@ input {
     cursor: pointer;
     margin-top: auto;
     flex-shrink: 0;
+}
+
+.upload-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #444;
+}
+
+.upload-section .form-group {
+    margin-bottom: 1rem;
+}
+
+.upload-area {
+    border: 2px dashed #555;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.03);
+    margin-bottom: 0.5rem;
+}
+
+.upload-area:hover {
+    border-color: #007acc;
+    background: rgba(0, 122, 204, 0.1);
+    transform: translateY(-2px);
+}
+
+.upload-area.dragover {
+    border-color: #007acc;
+    background: rgba(0, 122, 204, 0.2);
+    transform: scale(1.02);
+}
+
+.upload-content {
+    pointer-events: none;
+}
+
+.upload-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.7;
+}
+
+.upload-text {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #ddd;
+}
+
+.upload-area small {
+    color: #999;
+    font-size: 0.75rem;
+}
+
+.hidden-input {
+    display: none;
+}
+
+.upload-preview {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    border: 1px solid #444;
+    text-align: center;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.upload-preview.active {
+    border-color: #007acc;
+    background: rgba(0, 122, 204, 0.1);
+}
+
+.upload-preview p {
+    margin: 0;
+    color: #999;
+    font-style: italic;
+}
+
+.upload-preview .preview-name {
+    color: #007acc;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.upload-preview .preview-sample {
+    font-size: 1.1rem;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    width: 100%;
+}
+
+.background-preview-image {
+    max-width: 100%;
+    max-height: 80px;
+    border-radius: 4px;
+    margin: 0.5rem 0;
+    object-fit: contain;
+}
+
+.remove-btn {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    transition: background 0.2s;
+}
+
+.remove-btn:hover {
+    background: #ff5252;
+}
+
+.file-type {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    background: #007acc;
+    color: white;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    margin-left: 0.5rem;
+    text-transform: uppercase;
 }
 
 /* --------- live preview --------- */
