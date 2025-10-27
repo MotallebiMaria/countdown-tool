@@ -81,13 +81,18 @@ document.getElementById('fontUploadArea').addEventListener('click', () => {
 });
 
 createBtn.addEventListener('click', async () => {
+    const targetDate = document.getElementById('targetDate').value;
+    if (!targetDate) {
+        alert('Please select a date and time');
+        return;
+    }
+
     previewManager.clearPreview();
     if (livePreviewInterval) {
         clearInterval(livePreviewInterval);
         livePreviewInterval = null;
     }
 
-    const targetDate = document.getElementById('targetDate').value;
     const backgroundFile = document.getElementById('backgroundUpload').files[0];
     const title = document.getElementById('title').value;
     const titleSize = document.querySelector('.size[data-type="title"]').value;
@@ -102,11 +107,6 @@ createBtn.addEventListener('click', async () => {
     const secColor = document.querySelector('.color[data-type="secs"]').value;
     const animationSpeed = document.getElementById('animationSpeed').value;
     const selectedAnimation = document.querySelector('input[name="animation"]:checked')?.dataset.animation || '';
-    
-    if (!targetDate) {
-        alert('Please select a date and time');
-        return;
-    }
 
     curTargetDate = new Date(targetDate);
     curAnimations = selectedAnimation ? [selectedAnimation] : [];
