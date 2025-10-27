@@ -39,6 +39,15 @@
                         <input type="file" id="backgroundUpload" accept=".mp4,.jpg,.jpeg,.png">
                         <small>Supports: MP4, JPG, PNG</small>
                     </div>
+
+                    <div class="form-group">
+                        <label for="fontUpload">Custom Font (Optional):</label>
+                        <input type="file" id="fontUpload" accept=".ttf,.otf">
+                        <small>Supports: TTF, OTF</small>
+                        <div class="font-preview" id="fontPreview">
+                            <p>No font selected</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="preview-container">
@@ -46,9 +55,9 @@
                     <div id="livePreview"></div>
                 </div>
 
-                <!-- <div class="form-group">
+                <div class="form-group">
                     <button class="reset-btn" onclick="storageManager.resetSettings()">Reset Saved Settings</button>
-                </div> -->
+                </div>
 
                 <button class="create-btn" id="createBtn">Create Timer</button>
             </div>

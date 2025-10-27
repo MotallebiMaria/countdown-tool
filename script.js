@@ -8,6 +8,9 @@ let curTargetDate = null;
 let curBackgroundURL = null;
 let livePreviewInterval = null;
 let curAnimations = [];
+let curFontURL = null;
+let curFontName = null;
+let curFontFamily = null;
 
 settingsBtn.addEventListener('click', async () => {
     overlay.style.display = 'flex';
@@ -23,6 +26,13 @@ document.getElementById('backgroundUpload').addEventListener('change', async (e)
         }
         curBackgroundURL = URL.createObjectURL(backgroundFile);
         previewManager.updateBackgroundPreview(backgroundFile.type, curBackgroundURL);
+    }
+});
+
+document.getElementById('fontUpload').addEventListener('change', async (e) => {
+    const fontFile = e.target.files[0];
+    if (fontFile) {
+        await fontManager.handleFontUpload(fontFile);
     }
 });
 
@@ -119,13 +129,13 @@ createBtn.addEventListener('click', async () => {
 
     // actual timer display
     timerDisplay.innerHTML = `
-        <div class="timer draggable ${animationClasses}" style="position: relative; ${animationStyle}">
-            ${title ? `<p class="timer-title" style="font-size: ${titleSize}px; color: ${titleColor};">${title}</p>` : ""}
+        <div class="timer draggable ${animationClasses}" style="position: relative; ${animationStyle}; ${curFontFamily ? `font-family: ${curFontFamily}` : ''}">
+            ${title ? `<p class="timer-title" style="font-size: ${titleSize}px; color: ${titleColor}; ${curFontFamily ? `font-family: ${curFontFamily}` : ''}">${title}</p>` : ""}
             <div class="time-row">
-                <span class="days" style="font-size: ${daySize}px; color: ${dayColor};">0</span>d
-                <span class="hours" style="font-size: ${hourSize}px; color: ${hourColor};">0</span>h
-                <span class="mins" style="font-size: ${minSize}px; color: ${minColor};">0</span>m
-                <span class="secs" style="font-size: ${secSize}px; color: ${secColor};">0</span>s
+                <span class="days" style="font-size: ${daySize}px; color: ${dayColor}; ${curFontFamily ? `font-family: ${curFontFamily}` : ''}">0</span>d
+                <span class="hours" style="font-size: ${hourSize}px; color: ${hourColor}; ${curFontFamily ? `font-family: ${curFontFamily}` : ''}">0</span>h
+                <span class="mins" style="font-size: ${minSize}px; color: ${minColor}; ${curFontFamily ? `font-family: ${curFontFamily}` : ''}">0</span>m
+                <span class="secs" style="font-size: ${secSize}px; color: ${secColor}; ${curFontFamily ? `font-family: ${curFontFamily}` : ''}">0</span>s
             </div>
         </div>
     `;
@@ -458,6 +468,12 @@ const previewManager = {
             } else {
                 previewTimer.style.animationDuration = '';
             }
+
+             if (curFontFamily) {
+                previewTimer.style.fontFamily = curFontFamily;
+            } else {
+                previewTimer.style.fontFamily = '';
+            }
         }
 
         const titleEl = preview.querySelector('.preview-title');
@@ -471,30 +487,45 @@ const previewManager = {
             const relativeTitleSize = Math.min(titleSize / 50, 3);
             titleEl.style.fontSize = relativeTitleSize + 'em';
             titleEl.style.color = titleColor;
+
+            if (curFontFamily) hoursEl.style.fontFamily = curFontFamily;
+            else hoursEl.style.fontFamily = '';
         }
         
         if (daysEl) {
             const relativeDaySize = Math.min(daySize / 50, 3);
             daysEl.style.fontSize = relativeDaySize + 'em';
             daysEl.style.color = dayColor;
+
+            if (curFontFamily) hoursEl.style.fontFamily = curFontFamily;
+            else hoursEl.style.fontFamily = '';
         }
         
         if (hoursEl) {
             const relativeHourSize = Math.min(hourSize / 50, 3);
             hoursEl.style.fontSize = relativeHourSize + 'em';
             hoursEl.style.color = hourColor;
+
+            if (curFontFamily) hoursEl.style.fontFamily = curFontFamily;
+            else hoursEl.style.fontFamily = '';
         }
         
         if (minsEl) {
             const relativeMinSize = Math.min(minSize / 50, 3);
             minsEl.style.fontSize = relativeMinSize + 'em';
             minsEl.style.color = minColor;
+
+            if (curFontFamily) hoursEl.style.fontFamily = curFontFamily;
+            else hoursEl.style.fontFamily = '';
         }
         
         if (secsEl) {
             const relativeSecSize = Math.min(secSize / 50, 3);
             secsEl.style.fontSize = relativeSecSize + 'em';
             secsEl.style.color = secColor;
+
+            if (curFontFamily) hoursEl.style.fontFamily = curFontFamily;
+            else hoursEl.style.fontFamily = '';
         }
     },
 
@@ -643,13 +674,147 @@ const storageManager = {
             } catch (err) {
                 console.warn('Failed to delete background from IndexedDB', err);
             }
+            await fontManager.removeFont();
             location.reload();
+        }
+    },
+
+    async saveFont(fontFile) {
+        if (!fontFile) return;
+        const db = await this._openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(this._storeName, 'readwrite');
+            const store = tx.objectStore(this._storeName);
+            const entry = { 
+                id: 'font', 
+                blob: fontFile, 
+                type: fontFile.type || '', 
+                name: fontFile.name,
+                timestamp: Date.now() 
+            };
+            const req = store.put(entry);
+            req.onsuccess = () => resolve();
+            req.onerror = (e) => reject(e.target.error);
+        });
+    },
+
+    async getFont() {
+        const db = await this._openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(this._storeName, 'readonly');
+            const store = tx.objectStore(this._storeName);
+            const req = store.get('font');
+            req.onsuccess = (e) => resolve(e.target.result || null);
+            req.onerror = (e) => reject(e.target.error);
+        });
+    },
+
+    async deleteFont() {
+        const db = await this._openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(this._storeName, 'readwrite');
+            const store = tx.objectStore(this._storeName);
+            const req = store.delete('font');
+            req.onsuccess = () => resolve();
+            req.onerror = (e) => reject(e.target.error);
+        });
+    },
+};
+
+const fontManager = {
+    async handleFontUpload(fontFile) {
+        if (!fontFile.name.toLowerCase().endsWith('.ttf') && 
+            !fontFile.name.toLowerCase().endsWith('.otf')) {
+            alert('Please upload a .ttf or .otf font file');
+            return;
+        }
+
+        if (curFontURL) {
+            URL.revokeObjectURL(curFontURL);
+            curFontURL = null;
+        }
+
+        curFontURL = URL.createObjectURL(fontFile);
+        curFontName = fontFile.name.replace(/\.[^/.]+$/, ""); // remove extension
+        curFontFamily = `custom-font-${Date.now()}`;
+
+        await this.loadFont(fontFile, curFontFamily);
+
+        this.updateFontPreview();
+        
+        previewManager.updateLivePreview();
+        
+        await storageManager.saveFont(fontFile);
+    },
+
+    async loadFont(fontFile, fontFamily) {
+        return new Promise((resolve, reject) => {
+            const font = new FontFace(fontFamily, `url(${URL.createObjectURL(fontFile)})`);
+            
+            font.load().then(() => {
+                document.fonts.add(font);
+                resolve();
+            }).catch(err => {
+                console.error('Failed to load font:', err);
+                reject(err);
+            });
+        });
+    },
+
+    updateFontPreview() {
+        const fontPreview = document.getElementById('fontPreview');
+        if (fontPreview && curFontName) {
+            fontPreview.innerHTML = `
+                <div>
+                    <div class="font-name">${curFontName}</div>
+                    <p class="font-sample" style="font-family: ${curFontFamily}">Sample Text</p>
+                    <button class="remove-font" onclick="fontManager.removeFont()">Remove Font</button>
+                </div>
+            `;
+            fontPreview.classList.add('active');
+        }
+    },
+
+    async removeFont() {
+        if (curFontURL) {
+            URL.revokeObjectURL(curFontURL);
+            curFontURL = null;
+        }
+        curFontName = null;
+        curFontFamily = null;
+
+        const fontPreview = document.getElementById('fontPreview');
+        if (fontPreview) {
+            fontPreview.innerHTML = '<p>No font selected</p>';
+            fontPreview.classList.remove('active');
+        }
+
+        document.getElementById('fontUpload').value = '';
+
+        previewManager.updateLivePreview();
+        
+        await storageManager.deleteFont();
+    },
+
+    async loadSavedFont() {
+        try {
+            const stored = await storageManager.getFont();
+            if (stored && stored.blob) {
+                const fontFile = new File([stored.blob], stored.name || 'custom-font', {
+                    type: stored.type
+                });
+                
+                await this.handleFontUpload(fontFile);
+            }
+        } catch (err) {
+            console.error('Failed to load font from storage:', err);
         }
     }
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
     const saved = await storageManager.loadSavedSettings();
+    await fontManager.loadSavedFont();
     if (saved && saved.targetDate) {
         setTimeout(() => {
             createBtn.click();

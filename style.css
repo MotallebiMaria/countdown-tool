@@ -398,6 +398,57 @@ input {
     width: 100%;
 }
 
+/* font upload */
+.font-preview {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    border: 1px dashed #555;
+    text-align: center;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.font-preview p {
+    margin: 0;
+    color: #999;
+}
+
+.font-preview.active {
+    border-color: #007acc;
+    background: rgba(0, 122, 204, 0.1);
+}
+
+.font-preview .font-name {
+    color: #007acc;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.font-preview .font-sample {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.remove-font {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.remove-font:hover {
+    background: #ff5252;
+}
+
 /* animation effects */
 @keyframes fadeIn {
     from {
