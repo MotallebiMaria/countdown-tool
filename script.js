@@ -719,7 +719,37 @@ const storageManager = {
                 console.warn('Failed to delete background from IndexedDB', err);
             }
             await fontManager.removeFont();
-            location.reload();
+            
+            // reset everything to defaults
+            document.getElementById('title').value = '';
+            document.getElementById('targetDate').value = '';
+
+            document.querySelector('.size[data-type="title"]').value = '32';
+            document.querySelector('.color[data-type="title"]').value = '#ffffff';
+            document.querySelector('.size[data-type="days"]').value = '40';
+            document.querySelector('.color[data-type="days"]').value = '#ff6b6b';
+            document.querySelector('.size[data-type="hours"]').value = '40';
+            document.querySelector('.color[data-type="hours"]').value = '#4ecdc4';
+            document.querySelector('.size[data-type="mins"]').value = '40';
+            document.querySelector('.color[data-type="mins"]').value = '#45b7d1';
+            document.querySelector('.size[data-type="secs"]').value = '40';
+            document.querySelector('.color[data-type="secs"]').value = '#96ceb4';
+            
+            document.querySelector('input[data-animation=""]').checked = true;
+            document.getElementById('animationSpeed').value = '1';
+            
+            uploadManager.removeBackground();
+            fontManager.removeFont();
+            
+            previewManager.updateLivePreview();
+            
+            const previewContainer = document.getElementById('livePreview');
+            const existingBg = previewContainer.querySelector('.background-container');
+            if (existingBg) {
+                existingBg.remove();
+            }
+            
+            console.log('All settings have been reset');
         }
     },
 
